@@ -12,29 +12,32 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import ru.u26c4.model.Note;
+import ru.u26c4.model.NoteBuilder;
 
-import java.util.Collections;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Random;
+import java.util.stream.IntStream;
 
 @Slf4j
 @Controller
 public class NotesController {
 
-    @RequestMapping(value = "notes", method = RequestMethod.GET)
+    @RequestMapping(value = "notes", method = RequestMethod.POST)
     public ResponseEntity<List<Note>> notes(@AuthenticationPrincipal User user) {
         log.debug("/notes; user={}", user.getUsername());
 
-        return new ResponseEntity<>(Collections.<Note>emptyList(), HttpStatus.OK);
+        return new ResponseEntity<>(FakeData.list(user), HttpStatus.OK);
     }
 
     @RequestMapping(value = "create", method = RequestMethod.POST)
     public ResponseEntity<Note> create(@AuthenticationPrincipal User user) {
         log.debug("/create; user={}", user.getUsername());
 
-        return new ResponseEntity<>(
-                new Note(RandomStringUtils.randomAlphanumeric(6), "user", new Date()),
-                HttpStatus.OK);
+        return new ResponseEntity<>(FakeData.empty(user), HttpStatus.OK);
     }
 
     @RequestMapping(value = "save", method = RequestMethod.POST)
@@ -44,10 +47,48 @@ public class NotesController {
         return new ResponseEntity(HttpStatus.OK);
     }
 
-    @RequestMapping(value = "del/{id}", method = RequestMethod.DELETE)
+    @RequestMapping(value = "del/{id}", method = RequestMethod.POST)
     public ResponseEntity del(@AuthenticationPrincipal User user, @PathVariable("id") String id) {
         log.debug("/del; user={}, note={}", user.getUsername(), id);
 
         return new ResponseEntity(HttpStatus.OK);
+    }
+
+    static class FakeData {
+
+        private static Random random = new Random();
+
+        static List<Note> list(User user) {
+            List<Note> notes = new ArrayList<>();
+            IntStream.range(0, 5).forEach(i -> notes.add(new NoteBuilder()
+                    .id(RandomStringUtils.randomAlphanumeric(6))
+                    .createUser(user.getUsername())
+                    .createDate(generateDate())
+                    .text(generateText())
+                    .build())
+            );
+            return notes;
+        }
+
+        static Note empty(User user) {
+            return new NoteBuilder()
+                    .id(RandomStringUtils.randomAlphanumeric(6))
+                    .createUser(user.getUsername())
+                    .createDate(generateDate())
+                    .build();
+        }
+
+        private static String generateText() {
+            return RandomStringUtils.randomAlphabetic(random.nextInt(400));
+        }
+
+        private static Date generateDate() {
+            return Date.from(
+                    LocalDateTime.now()
+                            .minusDays(random.nextInt(200))
+                            .minusMinutes(random.nextInt(200))
+                            .toInstant(ZoneOffset.UTC)
+            );
+        }
     }
 }

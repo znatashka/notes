@@ -74,7 +74,7 @@ public class NotesController {
             return new NoteBuilder()
                     .id(RandomStringUtils.randomAlphanumeric(6))
                     .createUser(user.getUsername())
-                    .createDate(generateDate())
+                    .createDate(new Date())
                     .build();
         }
 

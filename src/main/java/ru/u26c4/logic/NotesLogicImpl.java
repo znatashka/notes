@@ -40,23 +40,32 @@ public class NotesLogicImpl implements NotesLogic {
         Set<String> keys = redisTemplate.keys("*");
         List<Note> notes = redisTemplate.opsForValue().multiGet(keys);
 
+        notes.sort(Comparator.comparing(Note::getCreateDate));
+
         return new ResponseEntity<>(notes, HttpStatus.OK);
     }
 
     @Override
     public ResponseEntity<Note> create(User user) {
-
         return new ResponseEntity<>(FakeData.empty(user), HttpStatus.OK);
     }
 
     @Override
     public ResponseEntity save(User user, Note note) {
+        if (redisTemplate.hasKey(note.getId())) {
+            note.setModifyDate(new Date());
+            note.setModifyUser(user.getUsername());
+        }
 
+        redisTemplate.opsForValue().set(note.getId(), note);
         return new ResponseEntity(HttpStatus.OK);
     }
 
     @Override
     public ResponseEntity del(User user, String id) {
+        if (redisTemplate.hasKey(id)) {
+            redisTemplate.delete(id);
+        }
 
         return new ResponseEntity(HttpStatus.OK);
     }

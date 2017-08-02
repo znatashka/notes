@@ -14,10 +14,9 @@ public interface NotesLogic {
     /**
      * Получение списка всех заметок
      *
-     * @param user текущий пользователь
      * @return список заметок
      */
-    ResponseEntity<List<Note>> notes(User user);
+    ResponseEntity<List<Note>> notes();
 
     /**
      * Создание новой заметки

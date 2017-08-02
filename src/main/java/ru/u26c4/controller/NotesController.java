@@ -30,7 +30,7 @@ public class NotesController {
     public ResponseEntity<List<Note>> notes(@AuthenticationPrincipal User user) {
         log.debug("/notes; user={}", user.getUsername());
 
-        return notesLogic.notes(user);
+        return notesLogic.notes();
     }
 
     @RequestMapping(value = "create", method = RequestMethod.POST)

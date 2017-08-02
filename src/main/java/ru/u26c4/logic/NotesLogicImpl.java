@@ -2,6 +2,8 @@ package ru.u26c4.logic;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.User;
@@ -9,22 +11,36 @@ import org.springframework.stereotype.Component;
 import ru.u26c4.model.Note;
 import ru.u26c4.model.NoteBuilder;
 
+import javax.annotation.PostConstruct;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 import java.util.stream.IntStream;
 
 @Slf4j
 @Component
 public class NotesLogicImpl implements NotesLogic {
 
-    @Override
-    public ResponseEntity<List<Note>> notes(User user) {
+    private RedisTemplate<String, Note> redisTemplate;
 
-        return new ResponseEntity<>(FakeData.list(user), HttpStatus.OK);
+    @Autowired
+    public NotesLogicImpl(RedisTemplate<String, Note> redisTemplate) {
+        this.redisTemplate = redisTemplate;
+    }
+
+    @PostConstruct
+    public void initData() {
+        for (Note note : FakeData.list()) {
+            redisTemplate.opsForValue().set(note.getId(), note);
+        }
+    }
+
+    @Override
+    public ResponseEntity<List<Note>> notes() {
+        Set<String> keys = redisTemplate.keys("*");
+        List<Note> notes = redisTemplate.opsForValue().multiGet(keys);
+
+        return new ResponseEntity<>(notes, HttpStatus.OK);
     }
 
     @Override
@@ -47,13 +63,15 @@ public class NotesLogicImpl implements NotesLogic {
 
     static class FakeData {
 
+        private static final String FAKE_USER = "bender";
+
         private static Random random = new Random();
 
-        static List<Note> list(User user) {
+        static List<Note> list() {
             List<Note> notes = new ArrayList<>();
             IntStream.range(0, 5).forEach(i -> notes.add(new NoteBuilder()
-                    .id(RandomStringUtils.randomAlphanumeric(6))
-                    .createUser(user.getUsername())
+                    .id(generateId())
+                    .createUser(FAKE_USER)
                     .createDate(generateDate())
                     .text(generateText())
                     .build())
@@ -63,10 +81,14 @@ public class NotesLogicImpl implements NotesLogic {
 
         static Note empty(User user) {
             return new NoteBuilder()
-                    .id(RandomStringUtils.randomAlphanumeric(6))
+                    .id(generateId())
                     .createUser(user.getUsername())
                     .createDate(new Date())
                     .build();
+        }
+
+        private static String generateId() {
+            return RandomStringUtils.randomAlphanumeric(6).toUpperCase();
         }
 
         private static String generateText() {

@@ -42,4 +42,8 @@ notesApp.controller('NotesController', function NotesController($scope, $http) {
     $scope.edit = function (note) {
         $scope.note = note;
     };
+
+    $scope.cancel = function () {
+        $scope.note = undefined;
+    }
 });

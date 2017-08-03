@@ -10,10 +10,6 @@ notesApp.controller('NotesController', function NotesController($scope, $http) {
 
     getAllNotes();
 
-    $scope.showFullText = function (text) {
-        alert(text);
-    };
-
     $scope.create = function () {
         $http.post('/create', {}).then(function (response) {
             $scope.note = response.data
@@ -21,20 +17,33 @@ notesApp.controller('NotesController', function NotesController($scope, $http) {
     };
 
     $scope.save = function () {
-        $http.post('/save', $scope.note).then(function (response) {
-            if (response.status === 200) {
-                getAllNotes();
-                $scope.note = undefined;
-                alert('the data was successfully stored');
-            }
-        })
+        if ($scope.note.text) {
+            $http.post('/save', $scope.note).then(function (response) {
+                if (response.status === 200) {
+                    getAllNotes();
+                    $scope.note = undefined;
+                    $scope.alert = {
+                        msg: 'data was successfully stored',
+                        type: 'success'
+                    };
+                }
+            })
+        } else {
+            $scope.alert = {
+                msg: 'text cannot be empty',
+                type: 'danger'
+            };
+        }
     };
 
     $scope.del = function (note) {
         $http.post('/del', note.id).then(function (response) {
             if (response.status === 200) {
                 getAllNotes();
-                alert('the data was successfully removed');
+                $scope.alert = {
+                    msg: 'data was successfully removed',
+                    type: 'success'
+                };
             }
         })
     };
@@ -45,5 +54,9 @@ notesApp.controller('NotesController', function NotesController($scope, $http) {
 
     $scope.cancel = function () {
         $scope.note = undefined;
-    }
+    };
+
+    $scope.closeAlert = function () {
+        $scope.alert = undefined;
+    };
 });

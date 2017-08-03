@@ -1,10 +1,5 @@
-html {
+body {
     font-family: 'Share Tech Mono', monospace;
-}
-
-table, th, td {
-    border: 1px solid;
-    border-collapse: collapse;
 }
 
 .clickable:hover {

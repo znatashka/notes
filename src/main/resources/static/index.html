@@ -5,56 +5,68 @@
     <title>Notes</title>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.6.5/angular.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/angular-ui-bootstrap/2.5.0/ui-bootstrap.min.js"></script>
     <script src="js/igTruncate.js"></script>
     <script src="js/app.js"></script>
 
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet"/>
     <link href="css/style.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css?family=Share+Tech+Mono" rel="stylesheet"/>
 </head>
 <body ng-controller="NotesController">
 <a href="/logout">Logout</a>
 <h1>Notes</h1>
-
-<a href="#create" ng-click="create()">Create</a>
-
-<table>
-    <thead>
-    <th>Text</th>
-    <th>Author</th>
-    <th>Create Date</th>
-    <th>Modifier</th>
-    <th>Modify Date</th>
-    <th>Actions</th>
-    </thead>
-    <tbody>
-    <tr ng-repeat="note in notes">
-        <td ng-class="note.text.length >= 50 ? 'clickable' : ''"
-            ng-click="note.text.length >= 50 ? showFullText(note.text) : ''">
-            {{note.text | truncate: 50}}
-        </td>
-        <td>{{note.createUser}}</td>
-        <td>{{note.createDate | date: 'dd.MM.yy HH:mm'}}</td>
-        <td>{{note.modifyUser}}</td>
-        <td>{{note.modifyDate | date:'dd.MM.yy HH:mm'}}</td>
-        <td>
-            <a href="#edit_{{note.id}}" ng-click="edit(note)">Edit</a>
-            <a href="#del_{{note.id}}" ng-click="del(note)">Del</a>
-        </td>
-    </tr>
-    </tbody>
-</table>
-
 <br>
+<div class="row">
+    <div class="col-md-8">
 
-<form ng-show="note">
-    <h3>Edit note</h3>
-    <label>Text
-        <textarea rows="10" cols="45" maxlength="400" ng-model="note.text" required></textarea>
-    </label>
-    <br>
-    <button ng-click="cancel()">Cancel</button>
-    <button ng-click="save()">Save</button>
-</form>
+        <button type="button" class="btn btn-info" ng-click="create()">New note</button>
+
+        <table class="table table-hover">
+            <thead>
+            <th>Text</th>
+            <th>Author</th>
+            <th>Create Date</th>
+            <th>Modifier</th>
+            <th>Modify Date</th>
+            <th>Actions</th>
+            </thead>
+            <tbody>
+            <tr ng-repeat="note in notes">
+                <td title="{{note.text.length >= 50 ? note.text : ''}}">{{note.text | truncate: 50}}</td>
+                <td>{{note.createUser}}</td>
+                <td>{{note.createDate | date: 'dd.MM.yy HH:mm'}}</td>
+                <td>{{note.modifyUser}}</td>
+                <td>{{note.modifyDate | date:'dd.MM.yy HH:mm'}}</td>
+                <td>
+                    <span class="glyphicon glyphicon-pencil clickable" ng-click="edit(note)"
+                          data-toggle="tooltip" data-placement="top" title="Edit"></span>
+                    <span class="glyphicon glyphicon-trash clickable" ng-click="del(note)"
+                          data-toggle="tooltip" data-placement="top" title="Delete"></span>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="col-md-4">
+        <form ng-show="note">
+            <h3>Edit note</h3>
+            <label>Text
+                <textarea rows="10" cols="45" maxlength="400" ng-model="note.text" required></textarea>
+            </label>
+            <br>
+            <button class="btn btn-danger" ng-click="cancel()">Cancel</button>
+            <button class="btn btn-success" ng-click="save()">Save</button>
+        </form>
+        <br>
+        <div ng-show="alert" uib-alert class="alert" ng-class="'alert-' + alert.type">
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close" ng-click="closeAlert()">
+                <span>&times;</span>
+            </button>
+            {{alert.msg}}
+        </div>
+    </div>
+</div>
 
 </body>
 </html>

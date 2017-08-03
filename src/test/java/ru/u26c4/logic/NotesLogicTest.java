@@ -8,7 +8,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -17,7 +16,6 @@ import ru.u26c4.model.Note;
 import ru.u26c4.model.NoteBuilder;
 
 import java.util.Date;
-import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -61,26 +59,22 @@ public class NotesLogicTest {
     @Test
     public void notes() {
         // ACT
-        ResponseEntity<List<Note>> response = notesLogic.notes();
+        notesLogic.notes();
 
         // ASSERT
         verify(redisTemplate).keys("*");
         verify(valueOperations).multiGet(anyCollectionOf(String.class));
-
-        responseIsOk(response);
     }
 
     @Test
     public void create() {
         // ACT
-        ResponseEntity<Note> response = notesLogic.create(user);
+        Note note = notesLogic.create(user);
 
         // ASSERT
-        responseIsOk(response);
-
-        assertNotNull(response.getBody());
-        assertNotNull(response.getBody().getId());
-        assertEquals(response.getBody().getCreateUser(), USERNAME);
+        assertNotNull(note);
+        assertNotNull(note.getId());
+        assertEquals(note.getCreateUser(), USERNAME);
     }
 
     @Test
@@ -89,11 +83,9 @@ public class NotesLogicTest {
         when(redisTemplate.hasKey(note.getId())).thenReturn(false);
 
         // ACT
-        ResponseEntity response = notesLogic.save(user, note);
+        notesLogic.save(user, note);
 
         // ASSERT
-        responseIsOk(response);
-
         verify(redisTemplate, atLeastOnce()).hasKey(note.getId());
         verify(valueOperations, atLeastOnce()).set(note.getId(), note);
     }
@@ -104,11 +96,9 @@ public class NotesLogicTest {
         when(redisTemplate.hasKey(note.getId())).thenReturn(true);
 
         // ACT
-        ResponseEntity response = notesLogic.save(user, note);
+        notesLogic.save(user, note);
 
         // ASSERT
-        responseIsOk(response);
-
         verify(redisTemplate, atLeastOnce()).hasKey(note.getId());
         verify(valueOperations, atLeastOnce()).set(note.getId(), note);
     }
@@ -119,18 +109,11 @@ public class NotesLogicTest {
         when(redisTemplate.hasKey(note.getId())).thenReturn(true);
 
         // ACT
-        ResponseEntity response = notesLogic.del(user, note.getId());
+        notesLogic.del(user, note.getId());
 
         // ASSERT
-        responseIsOk(response);
-
         verify(redisTemplate, atLeastOnce()).hasKey(note.getId());
         verify(redisTemplate, atLeastOnce()).delete(note.getId());
-    }
-
-    private void responseIsOk(ResponseEntity response) {
-        assertNotNull(response);
-        assertEquals(response.getStatusCodeValue(), OK_CODE);
     }
 
     @Configuration

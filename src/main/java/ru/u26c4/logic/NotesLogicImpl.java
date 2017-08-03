@@ -4,8 +4,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Component;
 import ru.u26c4.model.Note;
@@ -36,38 +34,35 @@ public class NotesLogicImpl implements NotesLogic {
     }
 
     @Override
-    public ResponseEntity<List<Note>> notes() {
+    public List<Note> notes() {
         Set<String> keys = redisTemplate.keys("*");
         List<Note> notes = redisTemplate.opsForValue().multiGet(keys);
 
         notes.sort(Comparator.comparing(Note::getCreateDate));
 
-        return new ResponseEntity<>(notes, HttpStatus.OK);
+        return notes;
     }
 
     @Override
-    public ResponseEntity<Note> create(User user) {
-        return new ResponseEntity<>(FakeData.empty(user), HttpStatus.OK);
+    public Note create(User user) {
+        return FakeData.empty(user);
     }
 
     @Override
-    public ResponseEntity save(User user, Note note) {
+    public void save(User user, Note note) {
         if (redisTemplate.hasKey(note.getId())) {
             note.setModifyDate(new Date());
             note.setModifyUser(user.getUsername());
         }
 
         redisTemplate.opsForValue().set(note.getId(), note);
-        return new ResponseEntity(HttpStatus.OK);
     }
 
     @Override
-    public ResponseEntity del(User user, String id) {
+    public void del(User user, String id) {
         if (redisTemplate.hasKey(id)) {
             redisTemplate.delete(id);
         }
-
-        return new ResponseEntity(HttpStatus.OK);
     }
 
     static class FakeData {

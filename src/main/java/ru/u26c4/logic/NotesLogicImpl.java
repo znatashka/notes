@@ -3,6 +3,7 @@ package ru.u26c4.logic;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Component;
@@ -20,9 +21,12 @@ import java.util.stream.IntStream;
 public class NotesLogicImpl implements NotesLogic {
 
     private RedisTemplate<String, Note> redisTemplate;
+    private HistoryLogic historyLogic;
 
     @Autowired
-    public NotesLogicImpl(RedisTemplate<String, Note> redisTemplate) {
+    public NotesLogicImpl(HistoryLogic historyLogic,
+                          @Qualifier("redisNoteTemplate") RedisTemplate<String, Note> redisTemplate) {
+        this.historyLogic = historyLogic;
         this.redisTemplate = redisTemplate;
     }
 
@@ -56,6 +60,7 @@ public class NotesLogicImpl implements NotesLogic {
         }
 
         redisTemplate.opsForValue().set(note.getId(), note);
+        historyLogic.save(note);
     }
 
     @Override

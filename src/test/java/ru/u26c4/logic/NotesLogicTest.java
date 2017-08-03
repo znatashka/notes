@@ -135,8 +135,13 @@ public class NotesLogicTest {
         }
 
         @Bean
+        public HistoryLogic historyLogic() {
+            return mock(HistoryLogic.class);
+        }
+
+        @Bean
         public NotesLogic notesLogic() {
-            return new NotesLogicImpl(redisTemplate());
+            return new NotesLogicImpl(historyLogic(), redisTemplate());
         }
     }
 }

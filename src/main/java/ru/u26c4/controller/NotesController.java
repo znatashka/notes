@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.RestController;
 import ru.u26c4.logic.NotesLogic;
 import ru.u26c4.model.Note;
 
-import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
 @Slf4j
@@ -42,7 +41,7 @@ public class NotesController {
     }
 
     @RequestMapping(value = "save", method = RequestMethod.POST)
-    public ResponseEntity save(@AuthenticationPrincipal User user, @RequestBody Note note, HttpServletRequest request) {
+    public ResponseEntity save(@AuthenticationPrincipal User user, @RequestBody Note note) {
         log.debug("/save; user={}, note={}", user.getUsername(), note);
 
         notesLogic.save(user, note);

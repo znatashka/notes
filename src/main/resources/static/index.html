@@ -15,7 +15,7 @@
 </head>
 <body ng-controller="NotesController">
 <a href="/logout">Logout</a>
-<h1>Notes</h1>
+<h2>Notes</h2>
 <br>
 <div class="row">
     <div class="col-md-8">
@@ -24,6 +24,7 @@
 
         <table class="table table-hover">
             <thead>
+            <th>ID</th>
             <th>Text</th>
             <th>Author</th>
             <th>Create Date</th>
@@ -33,6 +34,7 @@
             </thead>
             <tbody>
             <tr ng-repeat="note in notes">
+                <td>{{note.id}}</td>
                 <td title="{{note.text.length >= 50 ? note.text : ''}}">{{note.text | truncate: 50}}</td>
                 <td>{{note.createUser}}</td>
                 <td>{{note.createDate | date: 'dd.MM.yy HH:mm'}}</td>
@@ -43,6 +45,8 @@
                           data-toggle="tooltip" data-placement="top" title="Edit"></span>
                     <span class="glyphicon glyphicon-trash clickable" ng-click="del(note)"
                           data-toggle="tooltip" data-placement="top" title="Delete"></span>
+                    <span class="glyphicon glyphicon-tasks clickable" ng-click="showHistory(note)"
+                          data-toggle="tooltip" data-placement="top" title="Show History"></span>
                 </td>
             </tr>
             </tbody>
@@ -58,6 +62,21 @@
             <button class="btn btn-danger" ng-click="cancel()">Cancel</button>
             <button class="btn btn-success" ng-click="save()">Save</button>
         </form>
+        <div ng-show="history">
+            <h3>History for note with ID `{{history.noteId}}`</h3>
+            <table class="table table-striped">
+                <thead>
+                <th>Modifier</th>
+                <th>Modify Date</th>
+                <th>Text</th>
+                </thead>
+                <tbody>
+                <tr ng-repeat="item in history.items">
+
+                </tr>
+                </tbody>
+            </table>
+        </div>
         <br>
         <div ng-show="alert" uib-alert class="alert" ng-class="'alert-' + alert.type">
             <button type="button" class="close" data-dismiss="alert" aria-label="Close" ng-click="closeAlert()">

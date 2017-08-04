@@ -12,6 +12,7 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.support.AnnotationConfigContextLoader;
+import ru.u26c4.logic.util.RedisKey;
 import ru.u26c4.model.Note;
 import ru.u26c4.model.NoteBuilder;
 
@@ -28,7 +29,6 @@ import static org.mockito.Mockito.*;
 public class NotesLogicTest {
 
     private static final String USERNAME = "test";
-    private static final int OK_CODE = 200;
 
     @Autowired
     private NotesLogic notesLogic;
@@ -36,6 +36,8 @@ public class NotesLogicTest {
     private RedisTemplate redisTemplate;
     @Autowired
     private ValueOperations valueOperations;
+    @Autowired
+    private HistoryLogic historyLogic;
 
     private User user;
     private Note note;
@@ -62,7 +64,7 @@ public class NotesLogicTest {
         notesLogic.notes();
 
         // ASSERT
-        verify(redisTemplate).keys("*");
+        verify(redisTemplate).keys(RedisKey.NOTE.prefix() + "*");
         verify(valueOperations).multiGet(anyCollectionOf(String.class));
     }
 
@@ -80,40 +82,42 @@ public class NotesLogicTest {
     @Test
     public void insert() {
         // PREPARE
-        when(redisTemplate.hasKey(note.getId())).thenReturn(false);
+        when(redisTemplate.hasKey(RedisKey.NOTE.prefix() + note.getId())).thenReturn(false);
 
         // ACT
         notesLogic.save(user, note);
 
         // ASSERT
-        verify(redisTemplate, atLeastOnce()).hasKey(note.getId());
-        verify(valueOperations, atLeastOnce()).set(note.getId(), note);
+        verify(redisTemplate, atLeastOnce()).hasKey(RedisKey.NOTE.prefix() + note.getId());
+        verify(valueOperations, atLeastOnce()).set(RedisKey.NOTE.prefix() + note.getId(), note);
+        verify(historyLogic, atLeastOnce()).save(note);
     }
 
     @Test
     public void update() {
         // PREPARE
-        when(redisTemplate.hasKey(note.getId())).thenReturn(true);
+        when(redisTemplate.hasKey(RedisKey.NOTE.prefix() + note.getId())).thenReturn(true);
 
         // ACT
         notesLogic.save(user, note);
 
         // ASSERT
-        verify(redisTemplate, atLeastOnce()).hasKey(note.getId());
-        verify(valueOperations, atLeastOnce()).set(note.getId(), note);
+        verify(redisTemplate, atLeastOnce()).hasKey(RedisKey.NOTE.prefix() + note.getId());
+        verify(valueOperations, atLeastOnce()).set(RedisKey.NOTE.prefix() + note.getId(), note);
+        verify(historyLogic, atLeastOnce()).save(note);
     }
 
     @Test
     public void del() {
         // PREPARE
-        when(redisTemplate.hasKey(note.getId())).thenReturn(true);
+        when(redisTemplate.hasKey(RedisKey.NOTE.prefix() + note.getId())).thenReturn(true);
 
         // ACT
         notesLogic.del(user, note.getId());
 
         // ASSERT
-        verify(redisTemplate, atLeastOnce()).hasKey(note.getId());
-        verify(redisTemplate, atLeastOnce()).delete(note.getId());
+        verify(redisTemplate, atLeastOnce()).hasKey(RedisKey.NOTE.prefix() + note.getId());
+        verify(redisTemplate, atLeastOnce()).delete(RedisKey.NOTE.prefix() + note.getId());
     }
 
     @Configuration

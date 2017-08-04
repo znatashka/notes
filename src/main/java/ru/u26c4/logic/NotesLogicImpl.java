@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Component;
+import ru.u26c4.logic.util.RedisKey;
 import ru.u26c4.model.Note;
 import ru.u26c4.model.NoteBuilder;
 
@@ -33,13 +34,14 @@ public class NotesLogicImpl implements NotesLogic {
     @PostConstruct
     public void initData() {
         for (Note note : FakeData.list()) {
-            redisTemplate.opsForValue().set(note.getId(), note);
+            redisTemplate.opsForValue().set(RedisKey.NOTE.prefix() + note.getId(), note);
+            historyLogic.save(note);
         }
     }
 
     @Override
     public List<Note> notes() {
-        Set<String> keys = redisTemplate.keys("*");
+        Set<String> keys = redisTemplate.keys(RedisKey.NOTE.prefix() + "*");
         List<Note> notes = redisTemplate.opsForValue().multiGet(keys);
 
         notes.sort(Comparator.comparing(Note::getCreateDate));
@@ -54,19 +56,21 @@ public class NotesLogicImpl implements NotesLogic {
 
     @Override
     public void save(User user, Note note) {
-        if (redisTemplate.hasKey(note.getId())) {
+        String key = RedisKey.NOTE.prefix() + note.getId();
+        if (redisTemplate.hasKey(key)) {
             note.setModifyDate(new Date());
             note.setModifyUser(user.getUsername());
         }
 
-        redisTemplate.opsForValue().set(note.getId(), note);
+        redisTemplate.opsForValue().set(key, note);
         historyLogic.save(note);
     }
 
     @Override
     public void del(User user, String id) {
-        if (redisTemplate.hasKey(id)) {
-            redisTemplate.delete(id);
+        String key = RedisKey.NOTE.prefix() + id;
+        if (redisTemplate.hasKey(key)) {
+            redisTemplate.delete(key);
         }
     }
 

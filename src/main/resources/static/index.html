@@ -59,11 +59,15 @@
                 <textarea rows="10" cols="45" maxlength="400" ng-model="note.text" required></textarea>
             </label>
             <br>
-            <button class="btn btn-danger" ng-click="cancel()">Cancel</button>
+            <button class="btn btn-danger" ng-click="closeEdit()">Cancel</button>
             <button class="btn btn-success" ng-click="save()">Save</button>
         </form>
         <div ng-show="history">
-            <h3>History for note with ID `{{history.noteId}}`</h3>
+            <h3>History for note with ID `{{history.noteId}}`
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close" ng-click="closeHistory()">
+                    <span>&times;</span>
+                </button>
+            </h3>
             <table class="table table-striped">
                 <thead>
                 <th>Modifier</th>
@@ -72,7 +76,9 @@
                 </thead>
                 <tbody>
                 <tr ng-repeat="item in history.items">
-
+                    <td>{{item.modifier}}</td>
+                    <td>{{item.modifyDate | date:'dd.MM.yy HH:mm'}}</td>
+                    <td title="{{item.text.length >= 20 ? item.text : ''}}">{{item.text | truncate: 20}}</td>
                 </tr>
                 </tbody>
             </table>

@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 import ru.u26c4.logic.util.HistoryUtils;
+import ru.u26c4.logic.util.RedisKey;
 import ru.u26c4.model.History;
 import ru.u26c4.model.Note;
 
@@ -23,20 +24,21 @@ public class HistoryLogicImpl implements HistoryLogic {
 
     @Override
     public void save(Note note) {
+        String key = RedisKey.HISTORY.prefix() + note.getId();
         if (historyUtils.isModified(note)) {
             History history;
-            if (redisTemplate.hasKey(note.getId())) {
-                history = redisTemplate.opsForValue().get(note.getId());
+            if (redisTemplate.hasKey(key)) {
+                history = redisTemplate.opsForValue().get(key);
             } else {
                 history = new History(note.getId());
             }
             history.getItems().add(history.new Item(historyUtils.modifier(note), historyUtils.modifyDate(note), note.getText()));
-            redisTemplate.opsForValue().set(note.getId(), history);
+            redisTemplate.opsForValue().set(key, history);
         }
     }
 
     @Override
     public History get(String noteId) {
-        return redisTemplate.opsForValue().get(noteId);
+        return redisTemplate.opsForValue().get(RedisKey.HISTORY.prefix() + noteId);
     }
 }

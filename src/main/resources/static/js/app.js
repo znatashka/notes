@@ -11,6 +11,7 @@ notesApp.controller('NotesController', function NotesController($scope, $http) {
     getAllNotes();
 
     $scope.create = function () {
+        $scope.closeAlert();
         $http.post('/create', {}).then(function (response) {
             $scope.note = response.data
         })
@@ -48,15 +49,31 @@ notesApp.controller('NotesController', function NotesController($scope, $http) {
         })
     };
 
+    $scope.showHistory = function (note) {
+        $scope.closeAlert();
+        $scope.closeEdit();
+
+        $http.post('/history', note.id).then(function (response) {
+            $scope.history = response.data;
+        })
+    };
+
     $scope.edit = function (note) {
+        $scope.closeAlert();
+        $scope.closeHistory();
+
         $scope.note = note;
     };
 
-    $scope.cancel = function () {
+    $scope.closeEdit = function () {
         $scope.note = undefined;
     };
 
     $scope.closeAlert = function () {
         $scope.alert = undefined;
+    };
+
+    $scope.closeHistory = function () {
+        $scope.history = undefined;
     };
 });

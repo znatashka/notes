@@ -23,7 +23,7 @@ public class HistoryUtils {
 
     public boolean isModified(Note note) {
         if (redisTemplate.hasKey(note.getId())) {
-            Note oldNote = redisTemplate.opsForValue().get(note.getId());
+            Note oldNote = redisTemplate.opsForValue().get(RedisKey.NOTE.prefix() + note.getId());
             if (note.getText().equals(oldNote.getText())) {
                 return false;
             }
